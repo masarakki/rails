@@ -465,6 +465,19 @@ class EagerAssociationTest < ActiveRecord::TestCase
     assert_equal subscriber, subscription.subscriber
   end
 
+  def test_comment_on_first_posts_with_eagar_loading
+    # class Author
+    #   has_many :first_posts
+    #   has_many :comments_on_first_posts, -> { order('posts.id desc, comments.id asc') }, :through => :first_posts, :source => :comments
+    #
+    Author.includes(:comments_on_first_posts).all
+
+    # =>
+    # EagerAssociationTest#test_comment_on_first_posts_with_eagar_loading:
+    # ActiveRecord::StatementInvalid: SQLite3::SQLException: no such column: posts.id: SELECT "comments".* FROM "comments" WHERE "comments"."post_id" IN (1)  ORDER BY posts.id desc, comments.id asc
+    #
+  end
+
   def test_eager_association_loading_with_explicit_join
     posts = Post.all.merge!(:includes => :comments, :joins => "INNER JOIN authors ON posts.author_id = authors.id AND authors.name = 'Mary'", :limit => 1, :order => 'author_id').to_a
     assert_equal 1, posts.length
